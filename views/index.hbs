@@ -7,15 +7,47 @@
     <body>
         <h1>Hello World</h1>
         <button onclick="send()">Log Name </button>
+        <div>
+            <div id=p1></div>
+            <div id=p2></div>
+            <div id=p3></div>
+            <div id=p4></div>
+        </div>
+        <form id = "updateUser">
+            Update Username: <input type="text" id = "customUser"><br>
+            <input type="submit" value="Submit">
+        </form>
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
         <script> 
+            playerList = {}
             var socket = io();
+            $(document).ready(function(){
+                $('#updateUser').submit(function(){
+                    console.log($('#customUser').val());
+                    //playerDiv[socket.id].innerHTML = $('#customUser').val();
+
+                    socket.emit('updateid', {newId: $('#customUser').val()});
+                    return false;
+                });
+            });
             var send = function(){
                 socket.emit('console msg',{
                     msg: 'socket b working!'
                 }) 
             }
+            socket.on('sendData', function(data){
+                playerNum = 1
+                for(var i = 0; i < data.length; i++)
+                {
+                    var playerId = 'p' + playerNum;
+                    var curDiv = document.getElementById(playerId);
+                    curDiv.innerHTML = data[i].id;
+                    playerList[data[i].id] = curDiv;
+                    playerNum += 1;
+                }
+            })
+
         </script>
     </body>
 </html>
