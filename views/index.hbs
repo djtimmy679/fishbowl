@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+    </head>
+
+    <body>
+        <h1>Hello World</h1>
+        <button onclick="send()">Log Name </button>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+        <script> 
+            var socket = io();
+            var send = function(){
+                socket.emit('console msg',{
+                    msg: 'socket b working!'
+                }) 
+            }
+        </script>
+    </body>
+</html>
