@@ -1,26 +1,59 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <link href="/docs/4.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <link href="client/css/positioning.css" rel="stylesheet">
-        <link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/product/">
-
     </head>
 
     <body >
-        <h1>Fishbowl</h1>
-        <h3>Lobby</h3>
-        <div style="">
-            <div id=p1></div>
-            <div id=p2></div>
-            <div id=p3></div>
-            <div id=p4></div>
-        </div><br>
-        <form id = "updateUser">
-            Update Username: <input type="text" id = "customUser"><br>
-            <input type="submit" value="Submit">
-        </form>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">Fishbowl</a>
+        </nav>
+        <div class = 'row'>
+            <div class = 'p-3 p-md-5 '>
+                <h3>Lobby</h3>
+                <div style="">
+                    <div id=p1></div>
+                    <div id=p2></div>
+                    <div id=p3></div>
+                    <div id=p4></div>
+                    <div id=p5></div>
+                    <div id=p6></div>
+                    <div id=p7></div>
+                    <div id=p8></div>
+                    <div id=p9></div>
+                    <div id=p10></div>
+                    <div id=p11></div>
+                    <div id=p12></div>
+                </div><br>
+                <form id = "updateUser">
+                    Update Username: <input type="text" id = "customUser"><br>
+                    <input type="submit" value="Submit">
+                </form>
+            </div>
+            <div class = 'p-3 p-md-5'>
+                <div id='timer' style="font-size:25px">Time Left: </div>
+                <button onclick = "drawCard();">Draw Word </button> 
+                <button onclick = "startGame();">Start Game </button> 
+                <button onclick = "endGame();">End Game </button> 
+            </div>
+            <div class = 'p-3 p-md-5'>
+                <div id='yourWord' style="font-size:25px">Your Word: </div>
+                <button onclick = "correct();">Got It!</button> 
+                <button onclick = "pass();">Pass</button> 
+            </div>
+            <div class = 'p-3 p-md-5'>
+                <div id = 'team1'></div>
+                <div id = 'team2' ></div>
+                <div id = 'team3'></div>
+                <div id = 'team4'></div>
+                <div id = 'team5'></div>
+                <div id = 'team6'></div>
+                <button onclick = "reset();">Reset Game</button> 
+            </div>
+        </div>
         <div class='circle-container'>
             <div class = 'center bet' style = 'width:300px; height: 300px; top:40%; left:45%'>
                 <h2  style='width:250px' >Word Bank</h2> 
@@ -42,16 +75,16 @@
             <div id='game11' class='deg240 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
             <div id='game12' class='deg315 bet'><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
             <div id='game13' class='deg330 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
-            <div id='timer' class='timer bet '>Time Left: </div>
+
         </div>
-
-
 
         <div id = "confirmAdd"></div>
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
         <script> 
-            playerList = {}
+            lobbyLen = 0; 
+            tableLen = 0;
+            DICTIONARY = [];
             var socket = io();
             $(document).ready(function(){
                 $('#add_word').submit(function(){
@@ -71,20 +104,43 @@
                     return false;
                 });
             });
-            socket.on('updateGameTable',function(data){
-                console.log('its working on this end');
-                for(var i =0; i < data.length; i++){
-                    temp = document.getElementById(data[i].divId);
-                    temp.innerHTML = data[i].id;
-                    console.log(data[i].divId);
-                }
-            })
+            // socket.on('updateGameTable',function(data){
+            //     console.log('its working on this end');
+            //     for(var i =0; i < data.length; i++){
+            //         var temp = document.getElementById(data[i].divId);
+            //         temp.innerHTML = data[i].id;
+            //         console.log(data[i].divId);
+            //     }
+            // })
             socket.on('secretWord', function(data){
+                console.log(data.word);
                 alert('your word is: ' + data.word);
             })
             socket.on('sendData', function(data){
                 playerNum = 1
-                for(var i = 0; i < data.length; i++)
+                if(lobbyLen > data.pack.length)
+                {
+                    for(var b = SOCKET_LIST.length; b > data.pack.length; b-- ){
+                        var div = document.getElementById('p' + ('' + b)); 
+                        div.innerHTML = ""; 
+                    }
+                }
+                lobbyLen = data.pack.length; 
+                if(tableLen > data.table.length)
+                {
+                    for(var i = 2; i <= 13; i++){
+                        var temp = document.getElementById('game' + ("" + i));
+                        temp.innerHTML = "<button onclick=\"joinGame(this.parentElement.id);\">Move Here </button>";
+                    }
+                }
+                tableLen = data.table.length; 
+                if(data.points === {}){
+                    for(var v = 1; v < 7; v++){
+                        var ok = document.getElementById('team' + ("" + v));
+                        ok.innerHTML = "";
+                    }
+                }
+                for(var i = 0; i < data.pack.length; i++)
                 {
                     var playerId = 'p' + playerNum;
                     var curDiv = document.getElementById(playerId);
@@ -92,14 +148,38 @@
                    // gameId.innerHTML = data[i].id;
                     // cookieString = "id: " + data[i].id;
                     // document.cookie = cookieString; 
-                    curDiv.innerHTML = data[i].id;
-                    playerList[data[i].id] = curDiv;
+                    
+                    curDiv.innerHTML = data.pack[i].id;
                     playerNum += 1;
+                }
+                for(var x = 0; x < data.table.length; x++)
+                {
+                    var temp = document.getElementById(data.table[x].divId);
+                    temp.innerHTML = data.table[x].id;
+                  //  console.log(data.table[x].divId);
+                }
+                timer = document.getElementById('timer');
+                timer.innerHTML = 'Time Left: ' + data.timer; 
+                DICTIONARY = data.dictionary;
+                var idx = 1; 
+                for(var p in data.points){
+                    console.log(p);
+                    var div = document.getElementById('team' + (''+ idx));
+                    var gameDiv = document.getElementById(p);
+                    div.innerHTML = 'Team ' + gameDiv.innerHTML + ': \n ' + data.points[p];
+                    idx += 1
+                }
+                
+                if(data.timer == 0){
+                    noTime();
                 }
             })
 
         </script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        
         <script type="text/javascript" src ="client/js/joinGame.js"></script>
         <script type="text/javascript" src ="client/js/startGame.js"></script>
         <script type="text/javascript" src = "client/js/wordBucket.js"></script>

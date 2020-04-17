@@ -45,7 +45,9 @@ app.get('/', function(req, res){
 // });
 SOCKET_LIST = {}
 TABLE_LIST = {}
+POINTS = {}
 DICTIONARY = []
+TIMER = 30
 var currentNumberOfUsers = 0; 
 userPrefix = ['cool', 'awesome', 'effervescent', 'intellectual', 'large'];
 userSuffix = ['tiger', 'student', 'person', 'table', 'dog', 'holmes'];
@@ -57,62 +59,97 @@ io.sockets.on('connection', function(socket){
     socket.id = userPrefix[idx1] + '-' + userSuffix[idx2];
    // socket.connectionNum = currentNumberOfUsers;
     SOCKET_LIST[socket.id] = socket;
-    setInterval();
-
-    setTable();
     socket.on('disconnect', function(){
         delete SOCKET_LIST[socket.id];
-        setInterval();
         if (socket.id in TABLE_LIST){
             delete TABLE_LIST[socket.id];
         }
         currentNumberOfUsers -=1; //might have to change all the users connection Numbers
     })
+    socket.on('timer', function(data){
+        TIMER = data.time; 
+    })
     socket.on('updateid', function(data){
         socket = SOCKET_LIST[socket.id]; 
         delete SOCKET_LIST[socket.id];
-        socket.id = data.newId;
         if(socket.id in TABLE_LIST){
+            socket.id = data.newId;
             delete TABLE_LIST[socket.id];
             TABLE_LIST[socket.id] = socket; 
-            setTable();
         }
+        socket.id = data.newId;
         SOCKET_LIST[data.newId] = socket; 
-        setInterval(); 
     });
     socket.on('addWord', function(data){
         DICTIONARY.push(data.word); 
         console.log(DICTIONARY);
     });
+    socket.on('removeWord', function(data){
+        var idx = DICTIONARY.indexOf(data.word); 
+        delete DICTIONARY[idx];
+        console.log('game' + (''+(parseInt(data.curIdx)+1)));
+        if('game' + (''+data.curIdx) in POINTS)
+            POINTS['game' + (''+data.curIdx)] += 1;
+        else 
+            POINTS['game' + (''+(parseInt(data.curIdx)+1))] += 1;
+
+    })
     socket.on('drawCard', function(data){
         var dictLength = DICTIONARY.length; 
         var word = DICTIONARY[Math.floor(userPrefix.length*Math.random())];
-        io.to(socket.id).emit('secretWord', {word:word});
+        console.log(word);
+        console.log(socket.id);
+        io.to(`${socketId}`).emit('secretWord', {word:word});
     })
     socket.on('updateTable', function(data){
         socket.divId = data.divId; 
         TABLE_LIST[socket.id] = socket; 
-        setTable(); 
+        console.log(data.divId);
+        if(Object.keys(TABLE_LIST).length % 2 === 0){
+            POINTS[socket.divId] = 0;
+            console.log(POINTS);
+        }
+    })
+    socket.on('reset', function(data){
+        TABLE_LIST = {}
+        POINTS = {}
+        DICTIONARY = []
+        TIMER = 30
     })
 });
-function setInterval(){
-    var pack = [];
-    
+setInterval(function(){
+    var packLobby = [];
+    var packTable = []; 
     for(var i in SOCKET_LIST){
         var socket = SOCKET_LIST[i];
      //   console.log("this is the socket" + socket.id);
-        pack.push({
+        packLobby.push({
             id:socket.id
            // connectionNum: socket.connectionNum
         }); //builds a pack of current users and their associated data
     }
-    for(var i in SOCKET_LIST){
-        var socket = SOCKET_LIST[i];
-        console.log('its going in here');
-        socket.emit('sendData', pack);
+    for(var x in TABLE_LIST){
+        var socketT = TABLE_LIST[x];
+     //   console.log("this is the socket" + socket.id);
+        packTable.push({
+            id:socketT.id,
+            divId: socketT.divId
+           // connectionNum: socket.connectionNum
+        }); //builds a pack of current users and their associated data
+    }
+    for(var y in SOCKET_LIST){
+        var socketFin = SOCKET_LIST[y];
+       // console.log('its going in here');
+        socketFin.emit('sendData', {
+            pack: packLobby, 
+            table: packTable,
+            timer: TIMER,
+            dictionary: DICTIONARY,
+            points: POINTS
+        });
     }
     
-} 
+}, 1000/40);
 function setTable(){
     console.log(TABLE_LIST);
     var pack = [];
