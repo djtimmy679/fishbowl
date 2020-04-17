@@ -1,0 +1,13 @@
+DROP PROCEDURE IF EXISTS add_proc; 
+
+DELIMITER $$
+
+CREATE PROCEDURE rand_proc(IN idCur VARCHAR(100))
+BEGIN
+    SELECT column FROM table
+    ORDER BY RAND()
+    LIMIT 1
+    
+END$$ 
+
+DELIMITER ; 

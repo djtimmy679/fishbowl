@@ -1,47 +1,97 @@
 <!DOCTYPE html>
 <html>
     <head>
-        
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="/docs/4.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="client/css/positioning.css" rel="stylesheet">
+        <link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/product/">
+
     </head>
 
-    <body>
-        <h1>Hello World</h1>
-        <button onclick="send()">Log Name </button>
-        <div>
+    <body >
+        <h1>Fishbowl</h1>
+        <h3>Lobby</h3>
+        <div style="">
             <div id=p1></div>
             <div id=p2></div>
             <div id=p3></div>
             <div id=p4></div>
-        </div>
+        </div><br>
         <form id = "updateUser">
             Update Username: <input type="text" id = "customUser"><br>
             <input type="submit" value="Submit">
         </form>
+        <div class='circle-container'>
+            <div class = 'center bet' style = 'width:300px; height: 300px; top:40%; left:45%'>
+                <h2  style='width:250px' >Word Bank</h2> 
+                <form  style='width:250px' id = "add_word">
+                    Add Word: <input type="text" name="newWord" id = "newWord"><br>
+                    <input type="submit" value="Submit">
+                </form>
+            </div>
+            {{!--<div id='game1'><button onclick="joinGame(this.id, document.cookie);" id='game1' class='center'>Button</button></div>--}}
+            <div id='game2' class='deg0 bet'><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game3' class='deg10 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game4' class='deg45 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game5' class='deg55 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game6' class='deg135 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game7' class='deg145 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game8' class='deg180 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game9' class='deg195 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game10' class='deg225 bet'><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game11' class='deg240 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game12' class='deg315 bet'><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='game13' class='deg330 bet '><button onclick="joinGame(this.parentElement.id);">Move Here</button></div>
+            <div id='timer' class='timer bet '>Time Left: </div>
+        </div>
+
+
+
+        <div id = "confirmAdd"></div>
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
         <script> 
             playerList = {}
             var socket = io();
             $(document).ready(function(){
-                $('#updateUser').submit(function(){
-                    console.log($('#customUser').val());
-                    //playerDiv[socket.id].innerHTML = $('#customUser').val();
-
-                    socket.emit('updateid', {newId: $('#customUser').val()});
+                $('#add_word').submit(function(){
+                    socket.emit('addWord', {word: $('#newWord').val()});
+                    $('#newWord').val('');
                     return false;
                 });
             });
-            var send = function(){
-                socket.emit('console msg',{
-                    msg: 'socket b working!'
-                }) 
-            }
+            $(document).ready(function(){
+                $('#updateUser').submit(function(){
+                    console.log($('#customUser').val());
+                    //playerDiv[socket.id].innerHTML = $('#customUser').val();
+                    // cookieString = "id: " + $('#customUser').val();
+                    // document.cookie = cookieString; 
+                    socket.emit('updateid', {newId: $('#customUser').val()});
+                    $('#customUser').val('');
+                    return false;
+                });
+            });
+            socket.on('updateGameTable',function(data){
+                console.log('its working on this end');
+                for(var i =0; i < data.length; i++){
+                    temp = document.getElementById(data[i].divId);
+                    temp.innerHTML = data[i].id;
+                    console.log(data[i].divId);
+                }
+            })
+            socket.on('secretWord', function(data){
+                alert('your word is: ' + data.word);
+            })
             socket.on('sendData', function(data){
                 playerNum = 1
                 for(var i = 0; i < data.length; i++)
                 {
                     var playerId = 'p' + playerNum;
                     var curDiv = document.getElementById(playerId);
+                    //var gameId = document.getElementById('game' + playerNum+1);
+                   // gameId.innerHTML = data[i].id;
+                    // cookieString = "id: " + data[i].id;
+                    // document.cookie = cookieString; 
                     curDiv.innerHTML = data[i].id;
                     playerList[data[i].id] = curDiv;
                     playerNum += 1;
@@ -49,5 +99,10 @@
             })
 
         </script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <script type="text/javascript" src ="client/js/joinGame.js"></script>
+        <script type="text/javascript" src ="client/js/startGame.js"></script>
+        <script type="text/javascript" src = "client/js/wordBucket.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     </body>
 </html>

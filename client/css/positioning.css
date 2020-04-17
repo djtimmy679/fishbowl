@@ -1,0 +1,37 @@
+.circle-container {
+    	position: relative;
+    	width: 40em;
+    	height: 40em;
+    	padding: 2.8em;
+        /*2.8em = 2em*1.4 (2em = half the width of a link with img, 1.4 = sqrt(2))*/
+    	border: dashed 1px;
+    	border-radius: 50%;
+    	margin: 1.75em auto 0;
+    }
+.bet {
+	display: block;
+	position: absolute;
+	top: 50%; left: 50%;
+	width: 4em; height: 4em;
+	margin: -2em;
+}
+
+.circle-container img { display: block; width: 100%; }
+.deg0 { transform: rotate(-7deg) translate(20em) rotate(7deg); } 
+.timer { transform: translate(22em); font-size:30px; } 
+.deg10 { transform: rotate(8deg) translate(20em) rotate(-8deg); } 
+.deg45 { transform: rotate(38deg) translate(20em) rotate(-38deg); }
+.deg55 { transform: rotate(53deg) translate(20em) rotate(-53deg); }
+.deg135 { transform: rotate(128deg) translate(20em) rotate(-128deg); }
+.deg145 { transform: rotate(143deg) translate(20em) rotate(-143deg); }
+.deg180 { transform: rotate(173deg) translate(20em) rotate(-173deg); } 
+.deg195 { transform: rotate(187deg) translate(20em) rotate(-187deg); }
+.deg225 { transform: rotate(218deg) translate(20em) rotate(-218deg); }
+.deg240 { transform: rotate(233deg) translate(20em) rotate(-233deg); }
+.deg315 { transform: rotate(308deg) translate(20em) rotate(-308deg); }
+.deg330 { transform: rotate(323deg) translate(20em) rotate(-323deg); }
+
+body {
+    font-family: Comic Sans MS;
+    background-color: #aececf;
+}
