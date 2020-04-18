@@ -43,14 +43,17 @@ app.get('/', function(req, res){
 
 //     });
 // });
-SOCKET_LIST = {}
-TABLE_LIST = {}
-POINTS = {}
-DICTIONARY = []
-TIMER = 30
+SOCKET_LIST = {};
+TABLE_LIST = {};
+POINTS = {};
+DICTIONARY = [];
+TIMER = 30;
+var timerId = setInterval(countdown, 1000);
+bool = false; 
+pauseBool = false; 
 var currentNumberOfUsers = 0; 
-userPrefix = ['cool', 'awesome', 'effervescent', 'intellectual', 'large'];
-userSuffix = ['tiger', 'student', 'person', 'table', 'dog', 'holmes'];
+userPrefix = ['cool', 'awesome', 'effervescent', 'intellectual', 'large', 'siced','honorable', 'happy', 'amazing', 'dumb', 'perfect'];
+userSuffix = ['tiger', 'student', 'person', 'table', 'dog', 'homie','sicer', 'empress', 'elephant', 'exerciser', 'bromie', 'dawg'];
 io.sockets.on('connection', function(socket){
     currentNumberOfUsers += 1;
     console.log('socket connection')
@@ -66,9 +69,12 @@ io.sockets.on('connection', function(socket){
         }
         currentNumberOfUsers -=1; //might have to change all the users connection Numbers
     })
-    socket.on('timer', function(data){
-        TIMER = data.time; 
-    })
+    // socket.on('timer', function(data){
+    //     TIMER = data.time; 
+    // })
+    socket.on('pause', function(data){
+        bool = false; 
+    });
     socket.on('updateid', function(data){
         socket = SOCKET_LIST[socket.id]; 
         delete SOCKET_LIST[socket.id];
@@ -80,6 +86,15 @@ io.sockets.on('connection', function(socket){
         socket.id = data.newId;
         SOCKET_LIST[data.newId] = socket; 
     });
+    socket.on('startGame', function(data){
+        bool = true; 
+        pauseBool = true; 
+        noTime(); 
+        for(var i in SOCKET_LIST){
+            var socket = SOCKET_LIST[i];
+            socket.emit('clientStart', {});
+        }
+    })
     socket.on('addWord', function(data){
         DICTIONARY.push(data.word); 
         console.log(DICTIONARY);
@@ -94,13 +109,13 @@ io.sockets.on('connection', function(socket){
             POINTS['game' + (''+(parseInt(data.curIdx)+1))] += 1;
 
     })
-    socket.on('drawCard', function(data){
-        var dictLength = DICTIONARY.length; 
-        var word = DICTIONARY[Math.floor(userPrefix.length*Math.random())];
-        console.log(word);
-        console.log(socket.id);
-        io.to(`${socketId}`).emit('secretWord', {word:word});
-    })
+    // socket.on('drawCard', function(data){
+    //     var dictLength = DICTIONARY.length; 
+    //     var word = DICTIONARY[Math.floor(userPrefix.length*Math.random())];
+    //     console.log(word);
+    //     console.log(socket.id);
+    //     io.to(`${socketId}`).emit('secretWord', {word:word});
+    // })
     socket.on('updateTable', function(data){
         socket.divId = data.divId; 
         TABLE_LIST[socket.id] = socket; 
@@ -115,8 +130,34 @@ io.sockets.on('connection', function(socket){
         POINTS = {}
         DICTIONARY = []
         TIMER = 30
+        bool = false; 
     })
 });
+function noTime() {
+    if(pauseBool){
+
+        TIMER = 30;
+    }
+    else{
+
+        TIMER = 5; 
+        //get ready time 
+    }
+    pauseBool = !pauseBool; 
+    for(var i in SOCKET_LIST){
+        var socket = SOCKET_LIST[i];
+        socket.emit('highlight', {pauseBool: pauseBool});
+    }
+    
+}
+function countdown() {
+    if (TIMER === 0) {
+        noTime();
+    } else if(bool){
+        //elem.innerHTML = timeLeft + ' seconds remaining';
+        TIMER--;
+    }
+}
 setInterval(function(){
     var packLobby = [];
     var packTable = []; 
@@ -147,28 +188,29 @@ setInterval(function(){
             dictionary: DICTIONARY,
             points: POINTS
         });
+
     }
     
 }, 1000/40);
-function setTable(){
-    console.log(TABLE_LIST);
-    var pack = [];
-    for(var i in TABLE_LIST){
-        var socket = TABLE_LIST[i];
-     //   console.log("this is the socket" + socket.id);
-        pack.push({
-            id:socket.id,
-            divId: socket.divId
-           // connectionNum: socket.connectionNum
-        }); //builds a pack of current users and their associated data
-    }
-    for(var i in TABLE_LIST){
-        console.log('its emitting');
-        var socket = TABLE_LIST[i];
-        socket.emit('updateGameTable', pack);
-    }
+// function setTable(){
+//     console.log(TABLE_LIST);
+//     var pack = [];
+//     for(var i in TABLE_LIST){
+//         var socket = TABLE_LIST[i];
+//      //   console.log("this is the socket" + socket.id);
+//         pack.push({
+//             id:socket.id,
+//             divId: socket.divId
+//           // connectionNum: socket.connectionNum
+//         }); //builds a pack of current users and their associated data
+//     }
+//     for(var i in TABLE_LIST){
+//         console.log('its emitting');
+//         var socket = TABLE_LIST[i];
+//         socket.emit('updateGameTable', pack);
+//     }
     
-} 
+// } 
 
 // -------------- listener -------------- //
 var listener = http.listen(app.get('port'), function() {

@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>Fishbowl</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <link href="client/css/positioning.css" rel="stylesheet">
     </head>
@@ -37,7 +38,8 @@
                 <div id='timer' style="font-size:25px">Time Left: </div>
                 <button onclick = "drawCard();">Draw Word </button> 
                 <button onclick = "startGame();">Start Game </button> 
-                <button onclick = "endGame();">End Game </button> 
+                <button onclick = "endGame();">Pause Game </button> 
+                <p></p>
             </div>
             <div class = 'p-3 p-md-5'>
                 <div id='yourWord' style="font-size:25px">Your Word: </div>
@@ -116,11 +118,36 @@
                 console.log(data.word);
                 alert('your word is: ' + data.word);
             })
+            socket.on('highlight', function(data){
+                if(!data.pauseBool)
+                {
+                    curMpIdx = (curMpIdx + 1) % mainPlayers.length; 
+                    var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
+                    var userName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
+                    userName.style = 'background-color: yellow';
+                    userName2.style = 'background-color: yellow';
+                }
+                else{
+                    var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
+                    var userName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
+                    userName.style = '';
+                    userName2.style = '';
+                }
+            })
+            socket.on('clientStart', function(data){
+                playerList = [];
+                curMpIdx = 0; 
+                getPlayers();
+                var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
+                var userName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
+                userName.style = 'background-color: yellow';
+                userName2.style = 'background-color: yellow';
+            });
             socket.on('sendData', function(data){
                 playerNum = 1
                 if(lobbyLen > data.pack.length)
                 {
-                    for(var b = SOCKET_LIST.length; b > data.pack.length; b-- ){
+                    for(var b = lobbyLen; b > data.pack.length; b-- ){
                         var div = document.getElementById('p' + ('' + b)); 
                         div.innerHTML = ""; 
                     }
@@ -169,10 +196,7 @@
                     div.innerHTML = 'Team ' + gameDiv.innerHTML + ': \n ' + data.points[p];
                     idx += 1
                 }
-                
-                if(data.timer == 0){
-                    noTime();
-                }
+            
             })
 
         </script>

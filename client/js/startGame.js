@@ -1,8 +1,8 @@
-var timeLeft = 30;
+//var timeLeft = 30;
 var elem = document.getElementById('timer');
-var timerId = setInterval(countdown, 1000);
-var bool = false; 
-var pauseBool = false; 
+//var timerId = setInterval(countdown, 1000);
+//var bool = false; 
+//var pauseBool = false; 
 var mainPlayers = [];
 var curMpIdx = 0; 
 curWord = "";
@@ -24,16 +24,11 @@ function getPlayers(){
   //  console.log(mainPlayers)
 }
 function startGame(){
-    playerList = [];
-    getPlayers();
-    var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
-    var userName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
-    userName.style = 'background-color: yellow';
-    userName2.style = 'background-color: yellow';
-    bool = true; 
+    socket.emit('startGame', {});
+
 }
 function endGame(){
-    bool = false; 
+    socket.emit('pause', {});
 }
 function drawCard(){
     var numPlayers = playerList.length; 
@@ -63,38 +58,38 @@ function reset() {
     //     var ok = document.getElementById('team' + ("" + v));
     //     ok.innerHTML = "";
     // }
-    timeLeft = 30; 
-    bool = false; 
+    // timeLeft = 30; 
+    // bool = false; 
     socket.emit('reset');
 }
-function noTime() {
-    if(pauseBool){
-        curMpIdx = (curMpIdx + 1) % mainPlayers.length; 
-        var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
-        var userName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
-        userName.style = 'background-color: yellow';
-        userName2.style = 'background-color: yellow';
-        timeLeft = 30;
-    }
-    else{
-        var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
-        var userName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
-        userName.style = '';
-        userName2.style = '';
-        timeLeft = 5; 
-        //get ready time 
-    }
-    pauseBool = !pauseBool; 
+// function noTime() {
+//     if(pauseBool){
+//         curMpIdx = (curMpIdx + 1) % mainPlayers.length; 
+//         var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
+//         var userName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
+//         userName.style = 'background-color: yellow';
+//         userName2.style = 'background-color: yellow';
+//         timeLeft = 30;
+//     }
+//     else{
+//         var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
+//         var userName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
+//         userName.style = '';
+//         userName2.style = '';
+//         timeLeft = 5; 
+//         //get ready time 
+//     }
+//     pauseBool = !pauseBool; 
     
     
-}
-function countdown() {
-   // console.log(timeLeft)
-    if (timeLeft == 0) {
-        noTime();
-    } else if(bool){
-        //elem.innerHTML = timeLeft + ' seconds remaining';
-        timeLeft--;
-        socket.emit('timer', {time: timeLeft});
-    }
-}
+// }
+// function countdown() {
+//   // console.log(timeLeft)
+//     if (timeLeft == 0) {
+//         noTime();
+//     } else if(bool){
+//         //elem.innerHTML = timeLeft + ' seconds remaining';
+//         timeLeft--;
+//         socket.emit('timer', {time: timeLeft});
+//     }
+// }
