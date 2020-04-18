@@ -39,8 +39,11 @@ function drawCard(){
         alert('Another Player Needed');
     }
     var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
-    var dictLength = DICTIONARY.length; 
-    var word = DICTIONARY[Math.floor(DICTIONARY.length*Math.random())];
+    if(DICTIONARY.length < 5){
+        alert('Under 5 words left in word bank');
+    }
+    var idx = Math.floor(DICTIONARY.length*Math.random());
+    var word = DICTIONARY[idx];
     curWord = word; 
     document.getElementById('yourWord').innerHTML = 'your word is: ' + word;
    // socket.emit('drawCard', {id: userName});
