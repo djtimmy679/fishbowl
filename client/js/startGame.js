@@ -7,7 +7,9 @@ var mainPlayers = [];
 var curMpIdx = 0; 
 curWord = "";
 playerList = []
-
+function resume(){
+    socket.emit('resumeGame',{});
+}
 function getPlayers(){
     for(var i=2; i <= 13; i++)
     {
@@ -45,6 +47,7 @@ function drawCard(){
 }
 function correct() {
     socket.emit('removeWord', {word: curWord, curIdx: mainPlayers[curMpIdx]});
+    drawCard(); 
 }
 function pass() {
     drawCard(); 

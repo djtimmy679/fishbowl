@@ -87,14 +87,17 @@ io.sockets.on('connection', function(socket){
         SOCKET_LIST[data.newId] = socket; 
     });
     socket.on('startGame', function(data){
-        bool = true; 
         pauseBool = true; 
-        noTime(); 
+        noTime();
+        bool = true; 
         for(var i in SOCKET_LIST){
             var socket = SOCKET_LIST[i];
             socket.emit('clientStart', {});
         }
     })
+    socket.on('resumeGame', function(data){
+        bool = true; 
+    });
     socket.on('addWord', function(data){
         DICTIONARY.push(data.word); 
         console.log(DICTIONARY);
@@ -102,11 +105,15 @@ io.sockets.on('connection', function(socket){
     socket.on('removeWord', function(data){
         var idx = DICTIONARY.indexOf(data.word); 
         delete DICTIONARY[idx];
-        console.log('game' + (''+(parseInt(data.curIdx)+1)));
+      //  console.log('game' + (''+(parseInt(data.curIdx)+1)));
         if('game' + (''+data.curIdx) in POINTS)
             POINTS['game' + (''+data.curIdx)] += 1;
         else 
             POINTS['game' + (''+(parseInt(data.curIdx)+1))] += 1;
+        for(var i in SOCKET_LIST){
+            var socket = SOCKET_LIST[i];
+            socket.emit('showEveryone', {word: data.word});
+        }
 
     })
     // socket.on('drawCard', function(data){
@@ -117,12 +124,15 @@ io.sockets.on('connection', function(socket){
     //     io.to(`${socketId}`).emit('secretWord', {word:word});
     // })
     socket.on('updateTable', function(data){
-        socket.divId = data.divId; 
-        TABLE_LIST[socket.id] = socket; 
-        console.log(data.divId);
-        if(Object.keys(TABLE_LIST).length % 2 === 0){
-            POINTS[socket.divId] = 0;
-            console.log(POINTS);
+        if(!socket.inTable){
+            socket.inTable = true; 
+            socket.divId = data.divId; 
+            TABLE_LIST[socket.id] = socket; 
+            console.log(data.divId);
+            if(Object.keys(TABLE_LIST).length % 2 === 0){
+                POINTS[socket.divId] = 0;
+                console.log(POINTS);
+            }
         }
     })
     socket.on('reset', function(data){
@@ -131,19 +141,26 @@ io.sockets.on('connection', function(socket){
         DICTIONARY = []
         TIMER = 30
         bool = false; 
+        for(var i in SOCKET_LIST){
+            var socket = SOCKET_LIST[i];
+            socket.inTable = false; 
+            socket.emit('clearTeams', {});
+        }
+    
     })
 });
 function noTime() {
-    if(pauseBool){
+    TIMER = 30; 
+    bool = false; 
+    // if(pauseBool){
 
-        TIMER = 30;
-    }
-    else{
+    //     TIMER = 30;
+    // }
+    // else{
 
-        TIMER = 5; 
-        //get ready time 
-    }
-    pauseBool = !pauseBool; 
+    //     TIMER = 5; 
+    //     //get ready time 
+    // }
     for(var i in SOCKET_LIST){
         var socket = SOCKET_LIST[i];
         socket.emit('highlight', {pauseBool: pauseBool});
