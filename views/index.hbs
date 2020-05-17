@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>Fishbowl</title>
+        <link rel="icon" type="image/png" sizes="16x16" href="/client/favicon.ico">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <link href="client/css/positioning.css" rel="stylesheet">
     </head>
@@ -13,7 +14,7 @@
             <a class="navbar-brand" href="#">Fishbowl</a>
         </nav>
         <div class = 'row'>
-            <div class = 'p-3 p-md-5 '>
+            <div class = 'col-3 p-3 p-md-5 '>
                 <h3>Lobby</h3>
                 <div style="">
                     <div id=p1></div>
@@ -34,26 +35,32 @@
                     <input type="submit" value="Submit">
                 </form>
             </div>
-            <div class = 'p-3 p-md-5'>
+            <div class = 'col-3 p-3 p-md-5'>
                 <div id='timer' style="font-size:25px">Time Left: </div>
-                <button onclick = "resume();">Resume Game</button> 
-                <button onclick = "startGame();">Start Game </button> 
-                <button onclick = "endGame();">Pause Game </button> 
+                <div><button onclick = "startGame();" id = "startGameButton">Start Game </button> </div>
+                <button onclick = "pause();" disabled id = "pauseGameButton">Pause Game</button> 
+                <button onclick = "resume();" disabled id = "resumeGameButton">Resume Game</button> 
+                {{!--<button onclick = "endGame();" disabled id = "pauseGameButton">Pause Game </button> --}}
             </div>
-            <div class = 'p-3 p-md-5'>
+            <div class = 'col-3 p-3 p-md-5'>
                 <div id='yourWord' style="font-size:25px">word: </div>
                 <button onclick = "correct();">Got It</button> 
                 <button onclick = "pass();">New Card</button> 
                 <div id = "printWord"></div>
             </div>
-            <div class = 'p-3 p-md-5'>
+            <div class = 'col-3 p-3 p-md-5'>
                 <div id = 'team1'></div>
                 <div id = 'team2' ></div>
                 <div id = 'team3'></div>
                 <div id = 'team4'></div>
                 <div id = 'team5'></div>
                 <div id = 'team6'></div>
+                <form id = "updateTeam">
+                    Update Team Name: <input type="text" id = "customTeamName"><br>
+                    <input type="submit" value="Submit">
+                </form>
                 <button onclick = "reset();">Reset Game</button> 
+                <button onclick = "resetWordbank();">Restore Wordbank</button> 
             </div>
         </div>
         <div class='circle-container'>
@@ -85,10 +92,11 @@
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
         <script> 
-            lobbyLen = 0; 
-            tableLen = 0;
-            DICTIONARY = [];
+            myName = ''
             var socket = io();
+            socket.on('welcome', function(data){
+                myName = data.message; 
+            });
             $(document).ready(function(){
                 $('#add_word').submit(function(){
                     socket.emit('addWord', {word: $('#newWord').val()});
@@ -97,15 +105,32 @@
                 });
             });
             $(document).ready(function(){
-                $('#updateUser').submit(function(){
-                    console.log($('#customUser').val());
-                    //playerDiv[socket.id].innerHTML = $('#customUser').val();
-                    // cookieString = "id: " + $('#customUser').val();
-                    // document.cookie = cookieString; 
-                    socket.emit('updateid', {newId: $('#customUser').val()});
-                    $('#customUser').val('');
+                $('#updateTeam').submit(function(){
+                    if($('#customTeamName').val() != ''){
+                        socket.emit('updateteamid', {newId: $('#customTeamName').val()});
+                        $('#customTeamName').val('');
+                    }
                     return false;
                 });
+            });
+            $(document).ready(function(){
+                $('#updateUser').submit(function(){
+                    if($('#customUser').val() != ''){
+                        myName = $('#customUser').val();
+                        socket.emit('updateid', {newId: $('#customUser').val()});
+                        $('#customUser').val('');
+                    }
+                    return false;
+                });
+            });
+            socket.on('under5', function(data){
+                alert('Less than 5 words in dictionary');
+            });
+            socket.on('noWords', function(data){
+                alert('Out of words, put in more or reset word bank');
+            })
+            socket.on('oddPlayer', function(data){
+                alert('One more player needed! ');
             });
             socket.on('clearTeams', function(data){
                 for(var v = 1; v < 7; v++){
@@ -117,90 +142,66 @@
                 var div = document.getElementById('printWord');
                 div.innerHTML = 'The word was: ' + data.word; 
             });
-            // socket.on('updateGameTable',function(data){
-            //     console.log('its working on this end');
-            //     for(var i =0; i < data.length; i++){
-            //         var temp = document.getElementById(data[i].divId);
-            //         temp.innerHTML = data[i].id;
-            //         console.log(data[i].divId);
-            //     }
-            // })
-            socket.on('secretWord', function(data){
-                console.log(data.word);
-                alert('your word is: ' + data.word);
-            })
+
             socket.on('highlight', function(data){
-                // if(!data.pauseBool)
-                // {
-                var prevuserName = document.getElementById('game' + mainPlayers[curMpIdx]);
-                var prevuserName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
+
+                var prevuserName = document.getElementById(data.prevP1);
+                var prevuserName2 = document.getElementById(data.prevP2);
                 prevuserName.style = '';
                 prevuserName2.style = '';
-                curMpIdx = (curMpIdx + 1) % mainPlayers.length; 
-                var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
-                var userName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
-                userName.style = 'background-color: yellow';
-                userName2.style = 'background-color: yellow';
-                // }
-                // else{
 
-                // }
-            })
-            socket.on('clientStart', function(data){
-                playerList = [];
-                curMpIdx = 0; 
-                getPlayers();
-                var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
-                var userName2 = document.getElementById('game' + ("" + (parseInt(mainPlayers[curMpIdx])+1)));
+                var userName = document.getElementById(data.mainP1);
+                var userName2 = document.getElementById(data.mainP2);
                 userName.style = 'background-color: yellow';
                 userName2.style = 'background-color: yellow';
+                
+                document.getElementById('startGameButton').disabled = true; 
+                document.getElementById('resumeGameButton').disabled = false; 
+                document.getElementById('pauseGameButton').disabled = true; 
+
+            });
+            socket.on('clientStart', function(data){
+                var userName = document.getElementById(data.mainP1);
+                var userName2 = document.getElementById(data.mainP2);
+                userName.style = 'background-color: yellow';
+                userName2.style = 'background-color: yellow';
+                document.getElementById('startGameButton').disabled = true; 
+                document.getElementById('resumeGameButton').disabled = true; 
+                document.getElementById('pauseGameButton').disabled = false; 
+                
             });
             socket.on('sendData', function(data){
-                playerNum = 1
-                if(lobbyLen > data.pack.length)
-                {
-                    for(var b = lobbyLen; b > data.pack.length; b-- ){
-                        var div = document.getElementById('p' + ('' + b)); 
-                        div.innerHTML = ""; 
-                    }
-                }
-                lobbyLen = data.pack.length; 
-                if(tableLen > data.table.length)
-                {
-                    for(var i = 2; i <= 13; i++){
-                        var temp = document.getElementById('game' + ("" + i));
-                        temp.innerHTML = "<button onclick=\"joinGame(this.parentElement.id);\">Move Here </button>";
-                    }
-                }
-                tableLen = data.table.length; 
-                //console.log(data.points);
                 for(var i = 0; i < data.pack.length; i++)
                 {
-                    var playerId = 'p' + playerNum;
+                    var playerId = 'p' + ('' + (i+1));
                     var curDiv = document.getElementById(playerId);
-                    //var gameId = document.getElementById('game' + playerNum+1);
-                   // gameId.innerHTML = data[i].id;
-                    // cookieString = "id: " + data[i].id;
-                    // document.cookie = cookieString; 
-                    
-                    curDiv.innerHTML = data.pack[i].id;
-                    playerNum += 1;
+                    if(data.pack[i].id == myName){
+                        curDiv.innerHTML = data.pack[i].id;
+                        curDiv.style = 'font-weight: bold';
+                    }
+                    else{
+                        curDiv.innerHTML = data.pack[i].id;
+                        curDiv.style = '';
+                    }
                 }
-                for(var x = 0; x < data.table.length; x++)
-                {
-                    var temp = document.getElementById(data.table[x].divId);
-                    temp.innerHTML = data.table[x].id;
-                  //  console.log(data.table[x].divId);
+                for(var b = 12; b > data.pack.length; b-- ){
+                        var div = document.getElementById('p' + ('' + b)); 
+                        div.innerHTML = ""; 
+                }
+                for(var s in data.pack){
+                    var tabEle = data.pack[s];
+                    if(tabEle.inTable){
+
+                        var tabDiv = document.getElementById(tabEle.divId);
+                        tabDiv.innerHTML = tabEle.id; 
+                    }
                 }
                 timer = document.getElementById('timer');
                 timer.innerHTML = 'Time Left: ' + data.timer; 
-                DICTIONARY = data.dictionary;
                 var idx = 1; 
                 for(var p in data.points){
-                    console.log(p);
                     var div = document.getElementById('team' + (''+ idx));
-                    var gameDiv = document.getElementById(p);
-                    div.innerHTML = 'Team ' + gameDiv.innerHTML + ': \n ' + data.points[p];
+                    div.innerHTML = 'Team ' + data.points[p].name + ': \n ' + data.points[p].pts;
                     idx += 1
                 }
             

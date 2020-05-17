@@ -8,7 +8,10 @@ var curMpIdx = 0;
 curWord = "";
 playerList = []
 function resume(){
-    socket.emit('resumeGame',{});
+    document.getElementById('startGameButton').disabled = true; 
+    document.getElementById('resumeGameButton').disabled = true; 
+    document.getElementById('pauseGameButton').disabled = false; 
+    socket.emit('resumeGame');
 }
 function getPlayers(){
     for(var i=2; i <= 13; i++)
@@ -26,11 +29,15 @@ function getPlayers(){
   //  console.log(mainPlayers)
 }
 function startGame(){
+    
     socket.emit('startGame', {});
 
 }
-function endGame(){
-    socket.emit('pause', {});
+function pause(){
+    document.getElementById('startGameButton').disabled = true; 
+    document.getElementById('resumeGameButton').disabled = false; 
+    document.getElementById('pauseGameButton').disabled = true; 
+    socket.emit('pause');
 }
 function drawCard(){
     var numPlayers = playerList.length; 
@@ -38,18 +45,16 @@ function drawCard(){
     if (numPlayers % 2 !== 0){
         alert('Another Player Needed');
     }
-    var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
-    if(DICTIONARY.length < 5){
-        alert('Under 5 words left in word bank');
-    }
-    var idx = Math.floor(DICTIONARY.length*Math.random());
-    var word = DICTIONARY[idx];
-    curWord = word; 
-    document.getElementById('yourWord').innerHTML = 'your word is: ' + word;
-   // socket.emit('drawCard', {id: userName});
+    socket.emit('drawCard');
+
+
 }
+socket.on('retWord', function(data){
+    curWord = data.curWord;
+    document.getElementById('yourWord').innerHTML = 'your word is: ' + data.curWord;
+})
 function correct() {
-    socket.emit('removeWord', {word: curWord, curIdx: mainPlayers[curMpIdx]});
+    socket.emit('removeWord', {word: curWord});
     drawCard(); 
 }
 function pass() {

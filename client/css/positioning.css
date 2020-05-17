@@ -32,6 +32,6 @@
 .deg330 { transform: rotate(323deg) translate(15em) rotate(-323deg); }
 
 body {
-    font-family: Georgia;
+    font-family: Verdana;
     background-color: #aececf;
 }
