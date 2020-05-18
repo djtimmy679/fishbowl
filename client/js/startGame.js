@@ -37,7 +37,7 @@ function reset() {
 
 function joinGame(documentId){
     var myDivId = document.getElementById(documentId);
-
+    myDiv = documentId; 
     socket.emit('updateTable', {
         divId: documentId,
     });

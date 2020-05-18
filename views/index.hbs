@@ -83,8 +83,8 @@
                     {{!--<button onclick = "endGame();" disabled id = "pauseGameButton">Pause Game </button> --}}
                     <br><br>
                     <div id='yourWord' style="font-size:25px">word: </div>
-                    <button class="btn btn-light" onclick = "correct();">Got It</button> 
-                    <button class="btn btn-light" onclick = "pass();">New Card</button> 
+                    <button class="btn btn-light" id = "gotit" disabled onclick = "correct();">Got It</button> 
+                    <button class="btn btn-light" id = "newcard" disabled onclick = "pass();">New Card</button> 
                     <div id = "printWord"></div>
                 </div>
                 <div class='circle-container col-4 p-3'>
@@ -131,7 +131,8 @@
               document.getElementById("mysidenav").style.width = "0";
               document.getElementById("main").style.marginLeft = "0";
             }
-            myName = ''
+            myName = '';
+            myDiv = ''; 
             var socket = io();
             socket.on('welcome', function(data){
                 myName = data.message; 
@@ -199,6 +200,14 @@
                 document.getElementById('startGameButton').disabled = true; 
                 document.getElementById('resumeGameButton').disabled = false; 
                 document.getElementById('pauseGameButton').disabled = true; 
+                if(myDiv == data.mainP1 || myDiv == data.mainP2){
+                    document.getElementById('gotit').disabled = false;
+                    document.getElementById('newcard').disabled = false; 
+                }
+                else if (myDiv == data.prevP1 || myDiv == data.prevP1){
+                    document.getElementById('gotit').disabled = true; 
+                    document.getElementById('newcard').disabled = true; 
+                }
 
             });
             socket.on('clientStart', function(data){
@@ -209,6 +218,10 @@
                 document.getElementById('startGameButton').disabled = true; 
                 document.getElementById('resumeGameButton').disabled = true; 
                 document.getElementById('pauseGameButton').disabled = false; 
+                if(myDiv == data.mainP1 || myDiv == data.mainP2){
+                    document.getElementById('gotit').disabled = false;
+                    document.getElementById('newcard').disabled = false; 
+                }
                 
             });
             socket.on('sendData', function(data){

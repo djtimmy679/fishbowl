@@ -66,10 +66,10 @@ io.sockets.on('connection', function(socket){
     });
     socket.on('drawCard', function(data){
         //var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
-        if(DICTIONARY.length - ALREADY_SEEN.size < 5){
+        if(DICTIONARY.length - ALREADY_SEEN.size === 5){
             socket.emit('under5');
         }
-        if(DICTIONARY.length - ALREADY_SEEN.size == 0)
+        if(DICTIONARY.length - ALREADY_SEEN.size === 0)
         {
             socket.emit('noWords');
         }
@@ -86,6 +86,17 @@ io.sockets.on('connection', function(socket){
     })
     socket.on('updateid', function(data){
         socket = SOCKET_LIST[socket.id]; 
+        for(var team in POINTS){
+            var curplayers = POINTS[team].players; 
+            if(curplayers[0] == socket.id){
+                POINTS[team].players = [data.newId, curplayers[1]];
+                break; 
+            }
+            else if(curplayers[1] == socket.id){
+                POINTS[team].players = [curplayers[0], data.newId]; 
+                break; 
+            }
+        }
         delete SOCKET_LIST[socket.id];
         socket.id = data.newId;
         SOCKET_LIST[data.newId] = socket; 
@@ -99,12 +110,15 @@ io.sockets.on('connection', function(socket){
 
     });
     socket.on('startGame', function(data){
-        if(TABLE_LIST.length % 2 === 0){
+        socket = SOCKET_LIST[socket.id];
+        console.log(POINTS);
+        console.log(TABLE_LIST.length);
+        if((Object.keys(POINTS).length * 2) == TABLE_LIST.length){
 
             bool = true; 
             for(var i in SOCKET_LIST){
-                var socket = SOCKET_LIST[i];
-                socket.emit('clientStart', {
+                var socket2 = SOCKET_LIST[i];
+                socket2.emit('clientStart', {
                     mainP1: SOCKET_LIST[POINTS[currTeam].players[0]].divId,
                     mainP2: SOCKET_LIST[POINTS[currTeam].players[1]].divId
                 });
@@ -173,7 +187,8 @@ io.sockets.on('connection', function(socket){
         }
     });
     socket.on('resetDict', function(data){
-        ALREADY_SEEN.clear(); 
+        ALREADY_SEEN.clear();
+        console.log(ALREADY_SEEN);
     })
     socket.on('reset', function(data){
         TABLE_LIST = {}
@@ -195,7 +210,7 @@ function noTime() {
     bool = false; 
 
     prevTeam = currTeam; 
-    currTeam = (currTeam + 1)%(teamNumber+1); 
+    currTeam = (currTeam + 1)%(teamNumber); 
     console.log(currTeam);
     for(var i in SOCKET_LIST){
         var socket = SOCKET_LIST[i];
