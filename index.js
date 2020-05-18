@@ -66,10 +66,10 @@ io.sockets.on('connection', function(socket){
     });
     socket.on('drawCard', function(data){
         //var userName = document.getElementById('game' + mainPlayers[curMpIdx]);
-        if(DICTIONARY.length < 5){
+        if(DICTIONARY.length - ALREADY_SEEN.size < 5){
             socket.emit('under5');
         }
-        if(DICTIONARY.length - ALREADY_SEEN.size() == 0)
+        if(DICTIONARY.length - ALREADY_SEEN.size == 0)
         {
             socket.emit('noWords');
         }
@@ -195,7 +195,7 @@ function noTime() {
     bool = false; 
 
     prevTeam = currTeam; 
-    currTeam = (currTeam + 1)%POINTS.length; 
+    currTeam = (currTeam + 1)%(teamNumber+1); 
     console.log(currTeam);
     for(var i in SOCKET_LIST){
         var socket = SOCKET_LIST[i];
